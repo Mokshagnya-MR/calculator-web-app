@@ -5,34 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simple Calculator</title>
   <style>
+    :root {
+      --bg1: #6a11cb;
+      --bg2: #2575fc;
+      --card: #fff;
+      --muted: #f3f3f3;
+      --operator: #ff9500;
+      --operator-hover: #e68900;
+      --equal: #34c759;
+      --equal-hover: #2fa94d;
+      --btn: #e0e0e0;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
     body {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
-      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      font-family: Inter, Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 20px;
     }
 
     .calculator {
-      background: #fff;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      width: 300px;
+      background: var(--card);
+      padding: 18px;
+      border-radius: 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+      width: 320px;
+      max-width: 100%;
     }
 
     .display {
       width: 100%;
-      height: 50px;
+      height: 56px;
       text-align: right;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       border: none;
       outline: none;
-      padding: 10px;
+      padding: 12px;
       border-radius: 10px;
-      background: #f3f3f3;
-      margin-bottom: 10px;
+      background: var(--muted);
+      margin-bottom: 12px;
+      box-sizing: border-box;
+      caret-color: transparent; /* show keyboard input via appended handlers */
+    }
+
+    .display[aria-live] {
+      /* keep visible for screen readers */
     }
 
     .buttons {
@@ -42,72 +69,140 @@
     }
 
     button {
-      padding: 15px;
-      font-size: 1.2rem;
+      padding: 14px;
+      font-size: 1.15rem;
       border: none;
-      border-radius: 10px;
+      border-radius: 9px;
       cursor: pointer;
-      background: #e0e0e0;
-      transition: background 0.2s ease;
+      background: var(--btn);
+      transition: background 0.14s ease, transform 0.06s ease;
+      user-select: none;
+    }
+
+    button:active {
+      transform: translateY(1px);
     }
 
     button:hover {
       background: #d4d4d4;
     }
 
+    button[aria-pressed="true"] {
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,0.06);
+    }
+
     .operator {
-      background: #ff9500;
+      background: var(--operator);
       color: white;
     }
 
     .operator:hover {
-      background: #e68900;
+      background: var(--operator-hover);
     }
 
     .equal {
-      background: #34c759;
+      background: var(--equal);
       color: white;
+      grid-column: span 2; /* take two columns for prominence */
     }
 
     .equal:hover {
-      background: #2fa94d;
+      background: var(--equal-hover);
+    }
+
+    /* responsive tweaks */
+    @media (max-width: 360px) {
+      .display { height: 48px; font-size: 1.2rem; }
+      button { padding: 12px; font-size: 1rem; }
     }
   </style>
 </head>
 <body>
-  <div class="calculator">
-    <input type="text" id="display" class="display" disabled />
-    <div class="buttons">
-      <button onclick="clearDisplay()">C</button>
-      <button onclick="deleteChar()">DEL</button>
-      <button onclick="append('%')">%</button>
-      <button class="operator" onclick="append('/')">÷</button>
+  <div class="calculator" role="application" aria-label="Simple calculator">
+    <input
+      type="text"
+      id="display"
+      class="display"
+      readonly
+      maxlength="60"
+      aria-label="Calculator display"
+      aria-live="polite"
+      title="Calculator display — keyboard input supported (numbers, + - * / % . ( )). Enter to calculate, Backspace to delete, Esc to clear."
+    />
+    <div class="buttons" role="group" aria-label="Calculator buttons">
+      <button type="button" onclick="clearDisplay()" aria-label="Clear (C)">C</button>
+      <button type="button" onclick="deleteChar()" aria-label="Delete last character (DEL)">DEL</button>
+      <button type="button" onclick="append('%')" aria-label="Percent">%</button>
+      <button type="button" class="operator" onclick="append('/')" aria-label="Divide">÷</button>
 
-      <button onclick="append('7')">7</button>
-      <button onclick="append('8')">8</button>
-      <button onclick="append('9')">9</button>
-      <button class="operator" onclick="append('*')">×</button>
+      <button type="button" onclick="append('7')" aria-label="Seven">7</button>
+      <button type="button" onclick="append('8')" aria-label="Eight">8</button>
+      <button type="button" onclick="append('9')" aria-label="Nine">9</button>
+      <button type="button" class="operator" onclick="append('*')" aria-label="Multiply">×</button>
 
-      <button onclick="append('4')">4</button>
-      <button onclick="append('5')">5</button>
-      <button onclick="append('6')">6</button>
-      <button class="operator" onclick="append('-')">−</button>
+      <button type="button" onclick="append('4')" aria-label="Four">4</button>
+      <button type="button" onclick="append('5')" aria-label="Five">5</button>
+      <button type="button" onclick="append('6')" aria-label="Six">6</button>
+      <button type="button" class="operator" onclick="append('-')" aria-label="Minus">−</button>
 
-      <button onclick="append('1')">1</button>
-      <button onclick="append('2')">2</button>
-      <button onclick="append('3')">3</button>
-      <button class="operator" onclick="append('+')">+</button>
+      <button type="button" onclick="append('1')" aria-label="One">1</button>
+      <button type="button" onclick="append('2')" aria-label="Two">2</button>
+      <button type="button" onclick="append('3')" aria-label="Three">3</button>
+      <button type="button" class="operator" onclick="append('+')" aria-label="Plus">+</button>
 
-      <button onclick="append('0')">0</button>
-      <button onclick="append('.')">.</button>
-      <button class="equal" onclick="calculate()">=</button>
+      <button type="button" onclick="append('0')" aria-label="Zero">0</button>
+      <button type="button" onclick="append('.')" aria-label="Decimal point">.</button>
+      <button type="button" class="equal" onclick="calculate()" aria-label="Equals">=</button>
     </div>
   </div>
 
   <script>
     const display = document.getElementById('display');
 
+    // Utility helpers
+    const operators = ['+', '-', '*', '/'];
+    function lastChar() { return display.value.slice(-1); }
+
+    // Better append logic: avoid duplicate operators, control decimals, allow leading '-' only
     function append(value) {
+      const last = lastChar();
+
+      // If value is an operator
+      if (operators.includes(value)) {
+        // do not start with operator except minus
+        if (display.value === '' && value !== '-') return;
+        // replace trailing operator with new one (so user can change operator)
+        if (operators.includes(last)) {
+          display.value = display.value.slice(0, -1) + value;
+          return;
+        }
+        display.value += value;
+        return;
+      }
+
+      if (value === '.') {
+        // prevent multiple decimals in the current number segment
+        const lastOpIdx = Math.max(...operators.map(op => display.value.lastIndexOf(op)));
+        const currentNumber = display.value.slice(lastOpIdx + 1);
+        if (currentNumber.includes('.')) return;
+        // if nothing yet or last is operator, prepend 0
+        if (display.value === '' || operators.includes(last)) {
+          display.value += '0.';
+          return;
+        }
+        display.value += '.';
+        return;
+      }
+
+      if (value === '%') {
+        // allow appending percent after a number (e.g., 50%)
+        // do not allow consecutive % signs
+        if (last === '%' || display.value === '') return;
+        display.value += '%';
+        return;
+      }
+
+      // digits and parentheses
       display.value += value;
     }
 
@@ -119,13 +214,83 @@
       display.value = display.value.slice(0, -1);
     }
 
+    // Convert occurrences like 50% -> (50/100)
+    function expandPercents(expr) {
+      return expr.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
+    }
+
+    // Basic safety check: only allow digits, whitespace, operators, parentheses, dot and percent
+    function isSafeExpression(expr) {
+      return /^[0-9+\-*/().\s%]+$/.test(expr);
+    }
+
     function calculate() {
+      if (!display.value) return;
+
+      let expr = display.value;
+      expr = expandPercents(expr);
+
+      if (!isSafeExpression(expr)) {
+        display.value = 'Error';
+        return;
+      }
+
       try {
-        display.value = eval(display.value.replace(/\%/g, '/100'));
-      } catch {
+        // Use Function to evaluate but only after the simple whitelist check above.
+        // This is not bulletproof for every adversarial input but is significantly safer than raw eval().
+        // For production, replace with a proper math parser (e.g. math.js) if needed.
+        // eslint-disable-next-line no-new-func
+        const result = Function('"use strict"; return (' + expr + ')')();
+        if (typeof result === 'number' && Number.isFinite(result)) {
+          // trim trailing .0 for integers
+          display.value = (Math.round((result + Number.EPSILON) * 1e12) / 1e12).toString();
+        } else {
+          display.value = 'Error';
+        }
+      } catch (e) {
         display.value = 'Error';
       }
     }
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      // allow numbers and basic operators
+      if (e.key >= '0' && e.key <= '9') {
+        append(e.key);
+        e.preventDefault();
+        return;
+      }
+
+      if (['+', '-', '*', '/', '(', ')', '%', '.'].includes(e.key)) {
+        append(e.key);
+        e.preventDefault();
+        return;
+      }
+
+      if (e.key === 'Enter') {
+        calculate();
+        e.preventDefault();
+        return;
+      }
+
+      if (e.key === 'Backspace') {
+        deleteChar();
+        e.preventDefault();
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        clearDisplay();
+        e.preventDefault();
+        return;
+      }
+    });
+
+    // Optional: allow clicking the display to copy current expression/result
+    display.addEventListener('click', () => {
+      display.select();
+      try { navigator.clipboard?.writeText(display.value).catch(()=>{}); } catch {}
+    });
   </script>
 </body>
 </html>
